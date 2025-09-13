@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaira - Student Friend AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .chat-bubble { animation: fadeInUp 0.3s ease-out; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #9ca3af;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🤖</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Kaira</h1>
+                        <p class="text-sm opacity-90" id="tagline">Your AI Study Companion</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <select id="languageSelect" class="bg-white/20 text-white rounded-lg px-3 py-2 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="te">తెలుగు</option>
+                    </select>
+                    
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <span class="text-sm">👤</span>
+                        </div>
+                        <span class="text-sm" id="userName">Student</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" id="featuresTitle">Features</h3>
+                    <div class="space-y-3">
+                        <button class="feature-btn w-full text-left p-3 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors" data-feature="chat">
+                            <div class="flex items-center space-x-3">
+                                <span>💬</span>
+                                <span id="chatFeature">AI Chat</span>
+                            </div>
+                        </button>
+                        <button class="feature-btn w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors" data-feature="study">
+                            <div class="flex items-center space-x-3">
+                                <span>📚</span>
+                                <span id="studyFeature">Study Plans</span>
+                            </div>
+                        </button>
+                        <button class="feature-btn w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors" data-feature="quiz">
+                            <div class="flex items-center space-x-3">
+                                <span>🧠</span>
+                                <span id="quizFeature">Quiz Generator</span>
+                            </div>
+                        </button>
+                        <button class="feature-btn w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors" data-feature="notes">
+                            <div class="flex items-center space-x-3">
+                                <span>📝</span>
+                                <span id="notesFeature">Smart Notes</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Study Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" id="statsTitle">Study Stats</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600" id="todayStudy">Today's Study</span>
+                            <span class="font-semibold text-green-600">2h 30m</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600" id="weekStreak">Week Streak</span>
+                            <span class="font-semibold text-blue-600">5 days</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600" id="quizzesCompleted">Quizzes Done</span>
+                            <span class="font-semibold text-purple-600">12</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-sm h-[600px] flex flex-col">
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-gray-200">
+                        <h2 class="font-semibold text-gray-800" id="chatTitle">Chat with Kaira</h2>
+                        <p class="text-sm text-gray-500" id="chatSubtitle">Ask me anything about your studies!</p>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                        <!-- Welcome Message -->
+                        <div class="chat-bubble flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-sm">🤖</span>
+                            </div>
+                            <div class="bg-gray-100 rounded-lg p-3 max-w-md">
+                                <p class="text-gray-800" id="welcomeMessage">Hello! I'm Kaira, your AI study companion. How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="flex space-x-3">
+                            <input 
+                                type="text" 
+                                id="chatInput" 
+                                placeholder="Type your message..."
+                                class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                            <button 
+                                id="sendButton"
+                                class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 font-medium"
+                            >
+                                <span id="sendText">Send</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button class="quick-action bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors" data-message="Help me create a study plan">
+                                📅 <span id="studyPlanBtn">Study Plan</span>
+                            </button>
+                            <button class="quick-action bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors" data-message="Generate a quiz for me">
+                                🧠 <span id="generateQuizBtn">Generate Quiz</span>
+                            </button>
+                            <button class="quick-action bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors" data-message="Explain this concept">
+                                💡 <span id="explainBtn">Explain Concept</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                tagline: "Your AI Study Companion",
+                featuresTitle: "Features",
+                chatFeature: "AI Chat",
+                studyFeature: "Study Plans",
+                quizFeature: "Quiz Generator",
+                notesFeature: "Smart Notes",
+                statsTitle: "Study Stats",
+                todayStudy: "Today's Study",
+                weekStreak: "Week Streak",
+                quizzesCompleted: "Quizzes Done",
+                chatTitle: "Chat with Kaira",
+                chatSubtitle: "Ask me anything about your studies!",
+                welcomeMessage: "Hello! I'm Kaira, your AI study companion. How can I help you today?",
+                sendText: "Send",
+                studyPlanBtn: "Study Plan",
+                generateQuizBtn: "Generate Quiz",
+                explainBtn: "Explain Concept",
+                chatInputPlaceholder: "Type your message..."
+            },
+            hi: {
+                tagline: "आपका AI अध्ययन साथी",
+                featuresTitle: "सुविधाएं",
+                chatFeature: "AI चैट",
+                studyFeature: "अध्ययन योजना",
+                quizFeature: "क्विज़ जेनरेटर",
+                notesFeature: "स्मार्ट नोट्स",
+                statsTitle: "अध्ययन आंकड़े",
+                todayStudy: "आज का अध्ययन",
+                weekStreak: "सप्ताह की लकीर",
+                quizzesCompleted: "क्विज़ पूरे किए",
+                chatTitle: "कैरा से चैट करें",
+                chatSubtitle: "अपनी पढ़ाई के बारे में कुछ भी पूछें!",
+                welcomeMessage: "नमस्ते! मैं कैरा हूं, आपका AI अध्ययन साथी। आज मैं आपकी कैसे मदद कर सकती हूं?",
+                sendText: "भेजें",
+                studyPlanBtn: "अध्ययन योजना",
+                generateQuizBtn: "क्विज़ बनाएं",
+                explainBtn: "अवधारणा समझाएं",
+                chatInputPlaceholder: "अपना संदेश टाइप करें..."
+            },
+            te: {
+                tagline: "మీ AI అధ్యయన సహాయకుడు",
+                featuresTitle: "లక్షణాలు",
+                chatFeature: "AI చాట్",
+                studyFeature: "అధ్యయన ప్రణాళికలు",
+                quizFeature: "క్విజ్ జనరేటర్",
+                notesFeature: "స్మార్ట్ నోట్స్",
+                statsTitle: "అధ్యయన గణాంకాలు",
+                todayStudy: "నేటి అధ్యయనం",
+                weekStreak: "వారం స్ట్రీక్",
+                quizzesCompleted: "క్విజ్‌లు పూర్తయ్యాయి",
+                chatTitle: "కైరాతో చాట్ చేయండి",
+                chatSubtitle: "మీ చదువుల గురించి ఏదైనా అడగండి!",
+                welcomeMessage: "హలో! నేను కైరా, మీ AI అధ్యయన సహాయకుడు. ఈరోజు నేను మీకు ఎలా సహాయం చేయగలను?",
+                sendText: "పంపు",
+                studyPlanBtn: "అధ్యయన ప్రణాళిక",
+                generateQuizBtn: "క్విజ్ రూపొందించు",
+                explainBtn: "భావనను వివరించు",
+                chatInputPlaceholder: "మీ సందేశాన్ని టైప్ చేయండి..."
+            }
+        };
+
+        // Language switching functionality
+        const languageSelect = document.getElementById('languageSelect');
+        const chatInput = document.getElementById('chatInput');
+
+        function updateLanguage(lang) {
+            const t = translations[lang];
+            
+            // Update all text elements
+            Object.keys(t).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = t[key];
+                }
+            });
+            
+            // Update placeholder
+            chatInput.placeholder = t.chatInputPlaceholder;
+            
+            // Update quick action buttons
+            document.querySelectorAll('.quick-action').forEach((btn, index) => {
+                const keys = ['studyPlanBtn', 'generateQuizBtn', 'explainBtn'];
+                const textSpan = btn.querySelector('span');
+                if (textSpan && keys[index]) {
+                    textSpan.textContent = t[keys[index]];
+                }
+            });
+        }
+
+        languageSelect.addEventListener('change', (e) => {
+            updateLanguage(e.target.value);
+        });
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const sendButton = document.getElementById('sendButton');
+
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-bubble flex items-start space-x-3';
+            
+            if (isUser) {
+                messageDiv.className += ' flex-row-reverse space-x-reverse';
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-sm">👤</span>
+                    </div>
+                    <div class="bg-blue-500 text-white rounded-lg p-3 max-w-md">
+                        <p>${message}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-sm">🤖</span>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-md">
+                        <p class="text-gray-800">${message}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-bubble flex items-start space-x-3';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white text-sm">🤖</span>
+                </div>
+                <div class="bg-gray-100 rounded-lg p-3">
+                    <div class="flex space-x-1">
+                        <div class="typing-indicator"></div>
+                        <div class="typing-indicator"></div>
+                        <div class="typing-indicator"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function getAIResponse(message) {
+            const responses = {
+                en: [
+                    "That's a great question! Let me help you understand this concept better.",
+                    "I'd be happy to create a personalized study plan for you. What subject are you focusing on?",
+                    "Here's a quiz question to test your knowledge: What is the main function of mitochondria?",
+                    "I can help you break down complex topics into manageable chunks. What would you like to explore?",
+                    "Let's work on this together! I'll provide step-by-step explanations."
+                ],
+                hi: [
+                    "यह एक बेहतरीन सवाल है! मैं आपको इस अवधारणा को बेहतर समझने में मदद करूंगी।",
+                    "मैं आपके लिए एक व्यक्तिगत अध्ययन योजना बनाने में खुश हूं। आप किस विषय पर ध्यान दे रहे हैं?",
+                    "यहाँ आपके ज्ञान का परीक्षण करने के लिए एक प्रश्न है: माइटोकॉन्ड्रिया का मुख्य कार्य क्या है?",
+                    "मैं आपको जटिल विषयों को प्रबंधनीय भागों में तोड़ने में मदद कर सकती हूं। आप क्या खोजना चाहते हैं?",
+                    "आइए इस पर एक साथ काम करते हैं! मैं चरणबद्ध स्पष्टीकरण प्रदान करूंगी।"
+                ],
+                te: [
+                    "అది చాలా మంచి ప్రశ్న! ఈ భావనను మీకు బాగా అర్థం చేసుకోవడంలో నేను సహాయం చేస్తాను.",
+                    "మీ కోసం వ్యక్తిగతీకరించిన అధ్యయన ప్రణాళికను రూపొందించడంలో నేను సంతోషిస్తాను. మీరు ఏ విషయంపై దృష్టి పెట్టుతున్నారు?",
+                    "మీ జ్ఞానాన్ని పరీక్షించడానికి ఇక్కడ ఒక ప్రశ్న ఉంది: మైటోకాండ్రియా యొక్క ప్రధాన పని ఏమిటి?",
+                    "సంక్లిష్ట విషయాలను నిర్వహించదగిన భాగాలుగా విభజించడంలో నేను మీకు సహాయం చేయగలను. మీరు ఏమి అన్వేషించాలని అనుకుంటున్నారు?",
+                    "దీనిపై కలిసి పని చేద్దాం! నేను దశల వారీగా వివరణలు అందిస్తాను."
+                ]
+            };
+            
+            const currentLang = languageSelect.value;
+            const langResponses = responses[currentLang];
+            return langResponses[Math.floor(Math.random() * langResponses.length)];
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            addMessage(message, true);
+            chatInput.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                addMessage(getAIResponse(message));
+            }, 1500);
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Quick action buttons
+        document.querySelectorAll('.quick-action').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const message = btn.dataset.message;
+                chatInput.value = message;
+                sendMessage();
+            });
+        });
+
+        // Feature buttons
+        document.querySelectorAll('.feature-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.feature-btn').forEach(b => {
+                    b.className = b.className.replace('bg-blue-50 text-blue-700', 'hover:bg-gray-50');
+                });
+                
+                // Add active class to clicked button
+                btn.className = btn.className.replace('hover:bg-gray-50', 'bg-blue-50 text-blue-700');
+                
+                const feature = btn.dataset.feature;
+                const messages = {
+                    chat: "Let's start chatting! How can I help you today?",
+                    study: "I'll help you create a personalized study plan. What subjects are you working on?",
+                    quiz: "Ready for a quiz? Tell me what topic you'd like to be tested on!",
+                    notes: "I can help you organize and enhance your notes. What would you like to work on?"
+                };
+                
+                setTimeout(() => {
+                    addMessage(messages[feature] || "How can I help you with this feature?");
+                }, 500);
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e594fbb4f39f49',t:'MTc1Nzc0NDg4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
